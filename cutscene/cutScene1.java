@@ -1,5 +1,10 @@
 public class cutScene1 {
 	public static final int[][] Background_BUFFER_1 = new int[15][20];
+	
+		//mushit
+	private static boolean musicrunning = false;
+	
+	private static boolean palettesInitialized = false;
 
 	static {
 		int tx = 0;
@@ -10,7 +15,7 @@ public class cutScene1 {
 			}
 		}
 	}
-	
+
 	public static final byte[] FIRSTTEXT = {
 		// The church has always found witchcraft as an abomination and hunts us
 		19, 33, 30, 72, 
@@ -26,7 +31,7 @@ public class cutScene1 {
 		33, 46, 39, 45, 44, 72, 
 		47, 44, 66
 	};
-	
+
 	public static final byte[] SECONDTEXT = {
 		// The church caught our coven and killed all of my sisters. Im all thats left.
 		19, 33, 30, 72,
@@ -45,7 +50,7 @@ public class cutScene1 {
 		45, 33, 26, 45, 63, 44, 72,
 		37, 30, 31, 45, 66
 	};
-	
+
 	public static final byte[] THIRDTEXT = {
 		13,40,22,72,
 		26,72,
@@ -63,7 +68,7 @@ public class cutScene1 {
 		33,34,44,72,
 		39,26,38,30,66
 	};
-	
+
 	public static final byte[] FOURTHTEXT = {
 		19, 33, 30, 50, 72,
 		38, 46, 44, 45, 72,
@@ -73,9 +78,29 @@ public class cutScene1 {
 	private static boolean startingFadeOut = false;
 	private static int runner = 0, finished = 0, cutsceneState = 0;
 
-	public static void drawcutscene1(Window window) {
-		// --- STATE LOGIC ---
+	// --- PALETTE INITIALIZATION ---
+	private static void initializePalettes() {
+		spriteLoader.setPalette(0, cutSceneTextures1.BACKGROUND_PALETTES);
+		spriteLoader.setPalette(1, systemTextures.CHARCOLOR);
 		
+		palettesInitialized = true;
+	}
+
+	public static void drawcutscene1(Window window) {
+		if(musicrunning == false) {
+			new Thread(() -> {
+				main.music.playMidi(2);
+			}, "MIDI-Transition").start();
+	
+			musicrunning = true;
+		}
+		
+		if (!palettesInitialized){
+            initializePalettes();
+		}
+
+		// --- STATE LOGIC ---
+
 		// State 0: Fade IN Church
 		if (cutsceneState == 0) {
 			drawBackground(window, cutSceneTextures1.FIRST_SLIDE_TEXTURE_background);
@@ -223,7 +248,7 @@ public class cutScene1 {
 	private static void drawBackground(Window window, byte[][] texture) {
 		for (int y = 0; y < 15; y++) {
 			for (int x = 0; x < 20; x++) {
-				spriteLoader.drawtexture(window, 0, texture, Background_BUFFER_1[y][x], x * 16, y * 16, 100, cutSceneTextures1.BACKGROUND_PALETTES);
+				spriteLoader.drawtexture(window, 0, texture, Background_BUFFER_1[y][x], x * 16, y * 16, 100);
 			}
 		}
 	}

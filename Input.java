@@ -39,13 +39,12 @@ public class Input {
         return key >= 0 && key < pressed.length && pressed[key];
     }
 
-    // Call this ONCE at the start of every frame in your game loop
+    // Call this ONCE at the start of every frame in the game loop
     public static void update() {
         // Reset old single-frame states
         for (int i = 0; i < pressed.length; i++) {
             pressed[i] = false;
         }
-
         // Drain queued presses recorded since last frame
         Integer k;
         while ((k = pressQueue.poll()) != null) {
