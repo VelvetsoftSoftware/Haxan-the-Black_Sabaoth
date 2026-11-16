@@ -30,7 +30,6 @@ public class intro {
     private static final int HEIGHT_TILES = 15;
 
     private static final int[] LETTER_BUFFER = new int[WIDTH_TILES * HEIGHT_TILES];
-
     private static final int[] CHARACTER_BUFFER = new int[WIDTH_TILES * HEIGHT_TILES];
 
     private static boolean palettesInitialized = false;
@@ -93,8 +92,6 @@ public class intro {
          if (!palettesInitialized){
             initializePalettes();
 		}
-		
-		
         if (scale != 100) {
             x = 0;
             yPOS = 0;

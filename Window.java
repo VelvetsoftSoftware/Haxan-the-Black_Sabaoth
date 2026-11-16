@@ -13,6 +13,19 @@ public class Window extends JPanel {
     private static final int WIDTH = 320;
     private static final int HEIGHT = 240;
     private static final int PIXELS = WIDTH * HEIGHT;
+	
+	
+	private volatile long lastPaintTime = 0;
+	private volatile long maxPaintTime = 0;
+
+	public double getLastPaintTime() {
+		return lastPaintTime / 1_000_000.0;
+	}
+
+	public double getMaxPaintTime() {
+		return maxPaintTime / 1_000_000.0;
+	}
+
 
     // Rendering buffers
     int[] background1;
@@ -399,6 +412,8 @@ public class Window extends JPanel {
     // -----------------------------------------
 	@Override
 	protected void paintComponent(Graphics g) {
+		long paintStart = System.nanoTime();
+
 		super.paintComponent(g);
 
 		Graphics2D g2 = (Graphics2D) g.create();
@@ -410,99 +425,108 @@ public class Window extends JPanel {
 			g2.setColor(Color.BLACK);
 			g2.fillRect(0, 0, displayWidth, displayHeight);
 
-			g2.setRenderingHint(RenderingHints.KEY_INTERPOLATION, RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR);
+			g2.setRenderingHint(
+				RenderingHints.KEY_INTERPOLATION,
+				RenderingHints.VALUE_INTERPOLATION_NEAREST_NEIGHBOR
+			);
 
 			int gameScale = scale;
 
 			if (fullscreen || maximized) {
-				gameScale = Math.max(1, Math.min(displayWidth / WIDTH, displayHeight / HEIGHT));
+				gameScale = Math.max(
+					1,
+					Math.min(
+						displayWidth / WIDTH,
+						displayHeight / HEIGHT
+					)
+				);
 			}
 
 			int gameWidth = WIDTH * gameScale;
 			int gameHeight = HEIGHT * gameScale;
+
 			int gameX = (displayWidth - gameWidth) / 2;
 			int gameY = (displayHeight - gameHeight) / 2;
 
 			// Draw game framebuffer
-			g2.drawImage(screenImage, gameX, gameY, gameWidth, gameHeight, null);
+			g2.drawImage( screenImage, gameX, gameY, gameWidth, gameHeight, null );
 
-			// Draw complete ornamental frame
+			// Draw ornamental border in fullscreen/maximized mode
 			if ((fullscreen || maximized) && borderImage != null) {
-				g2.drawImage(borderImage, 0, 0, displayWidth, displayHeight, null);
+				g2.drawImage( borderImage, 0, 0, displayWidth, displayHeight, null );
+
 				// Centered title
 				String title = "Haxan: The Black Sabaoth";
-				int fontSize = Math.max(12,displayWidth / 55);
-				g2.setFont(new Font(Font.MONOSPACED, Font.BOLD, fontSize));
+
+				int fontSize = Math.max(12, displayWidth / 55);
+
+				g2.setFont(new Font( Font.MONOSPACED, Font.BOLD, fontSize));
+
 				FontMetrics metrics = g2.getFontMetrics();
+
 				int titleX = (displayWidth - metrics.stringWidth(title)) / 2;
+
 				int titleY = Math.max(fontSize + 8, displayHeight / 24);
+
 				// Black shadow
 				g2.setColor(new Color(35, 12, 30));
 				g2.drawString(title, titleX + 2, titleY + 2);
+
 				// Gold title
 				g2.setColor(new Color(235, 196, 116));
-				g2.drawString(title, titleX, titleY );
+				g2.drawString(title, titleX, titleY);
 			}
+
 		} finally {
 			g2.dispose();
+
+			long elapsed = System.nanoTime() - paintStart;
+
+			lastPaintTime = elapsed;
+
+			if (elapsed > maxPaintTime) {
+				maxPaintTime = elapsed;
+			}
 		}
 	}
-
 
     // -----------------------------------------
     // SET PIXEL
     // -----------------------------------------
-    public void setPixel( int buffer, int x, int y, int color) {
-        if (x < 0 || x >= WIDTH || y < 0 || y >= HEIGHT) {
-            return;
-        }
-		
-        color |= 0xFF000000;
-        int index = y * WIDTH + x;
-
-        switch (buffer) {
-            case 0:
-                background1[index] = color;
-                break;
-            case 1:
-                background2[index] = color;
-                break;
-            case 2:
-                playground[index] = color;
-                break;
-            case 3:
-                foreground1[index] = color;
-                break;
-            case 4:
-                foreground2[index] = color;
-                break;
-        }
-    }
+    public int[] getBuffer(int buffer) {
+		switch(buffer) {
+			case 0: return background1;
+			case 1: return background2;
+			case 2: return playground;
+			case 3: return foreground1;
+			case 4: return foreground2;
+			default: throw new IllegalArgumentException("Invalid buffer");
+		}
+	}
 
     // -----------------------------------------
     // COMPOSE
     // -----------------------------------------
-    public void compose() {
 
-        for (int i = 0; i < PIXELS; i++) {
-            int color = background1[i];
+	public void compose() {
+		for(int i = 0; i < PIXELS; i++) {
+			int color = foreground2[i];
 
-            if (background2[i] != 0) {
-                color = background2[i];
-            }
-            if (playground[i] != 0) {
-                color = playground[i];
-            }
-            if (foreground1[i] != 0) {
-                color = foreground1[i];
-            }
-            if (foreground2[i] != 0) {
-                color = foreground2[i];
-            }
+			if(color == 0)
+				color = foreground1[i];
 
-            screen[i] = color;
-        }
-    }
+			if(color == 0)
+				color = playground[i];
+
+			if(color == 0)
+				color = background2[i];
+
+			if(color == 0)
+				color = background1[i];
+
+			screen[i] = color;
+		}
+	}
 
     // -----------------------------------------
     // CLEAR BUFFERS

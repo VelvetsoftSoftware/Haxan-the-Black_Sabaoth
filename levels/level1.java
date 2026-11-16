@@ -1,4 +1,3 @@
-
 public class level1 {
 	//background layer will be present the moon on the right
 	//clouds slowly paralaxing
@@ -7,9 +6,11 @@ public class level1 {
 	//as player goes down trees paralax up
 	//player gains control
 	
-	private static int xscroll = 0, xpos0 = 0, xpos1 = 0, xpos2 = 0, xpos3 = 0;
-	private static int xplayer = -32, yplayer = 240;
-	private static int cutsceneStage = 0, bobCounter = 0, bobOffset = 0;
+	private static int xscroll = 0, xpos0 = 0, xpos1 = 0, xpos2 = 0, xpos3 = 0, cutsceneStage = 0, bobCounter = 0, bobOffset = 0;
+	static {
+        playermove.xplayer = -32;
+        playermove.yplayer = 240;
+    }
 
 	private static boolean startingFadeOut = false, palettesInitialized = false, introcutscene = false;
 	
@@ -41,53 +42,52 @@ public class level1 {
 	
 	public static void drawmainmenu(Window window) {
 		if(introcutscene) {
-			int[] position = playermove.listener(xplayer, yplayer);
-			xplayer = position[0];
-			yplayer = position[1];
+			int[] position = playermove.listener(playermove.xplayer, playermove.yplayer);
+			playermove.xplayer = position[0];
+			playermove.yplayer = position[1];
+			utility.bulletcall(window, (byte)3);
 			
-			if(xscroll % 514 == 0)
+			if(xscroll % 500 == 0)
 				xpos0++;
 			if(xscroll % 45 == 0 && xpos1 < 192)
 				xpos1++;
 
-			xpos2 -= 2;
-			xpos3--;
+			xpos2 += 2;
+			xpos3++;
 		} else {
 			if(cutsceneStage == 0) {
 				if(xscroll % 2 == 0){
-					xplayer += 3;
-					if(yplayer > 70)
-						yplayer -= 2;
+					playermove.xplayer += 3;
+					if(playermove.yplayer > 70)
+						playermove.yplayer -= 2;
 				}
-				if(xplayer >= 220) {
-					xplayer = 220;
+				if(playermove.xplayer >= 220) {
+					playermove.xplayer = 220;
 					cutsceneStage = 1;
 				}
-
-				xpos2 -= 4;
-				xpos3 -= 3;
+				xpos2 += 4;
+				xpos3 += 3;
 			} else if(cutsceneStage == 1) {
 				if(xscroll % 2 == 0)
-					xplayer -= 2;
-				if(xplayer <= 20) {
-					xplayer = 20;
+					playermove.xplayer -= 2;
+				if(playermove.xplayer <= 20) {
+					playermove.xplayer = 20;
 					cutsceneStage = 2;
 				}
 
-				xpos2 -= 3;
-				xpos3 -= 2;
+				xpos2 += 3;
+				xpos3 += 2;
 			} else if(cutsceneStage == 2) {
-				if(yplayer < 70)
-					yplayer--;
+				if(playermove.yplayer < 70)
+					playermove.yplayer--;
 				else {
 					introcutscene = true;
 				}
 
-				xpos2 -= 3;
-				xpos3 -= 2;
+				xpos2 += 3;
+				xpos3 += 2;
 				}
 			}
-		
 		bobCounter++;
 		switch((bobCounter / 12) % 4) {
 			case 0:
@@ -115,20 +115,14 @@ public class level1 {
 			musicrunning = true;
 		}
 		
-		if(xplayer < 0)
-			xplayer = 0;
-		if(xplayer >= 288)
-			xplayer = 288;
-		if(yplayer < 0)
-			yplayer = 0;
-		if(yplayer >= 192)
-			yplayer = 192;
+		playermove.checkbounds();
 		
 		drawBackground(window, 0, level1textures.BACKGROUNDARABORA, 22, 15, xpos0, 0);
 		utility.drawImage(window, level1textures.MOONTEXTURE, 8, 192 - xpos1, 36, 100, 1);
 		drawBackground(window, 4, level1textures.TREES1TEXTURE, 45, 15, xpos2, 0);
 		drawBackground(window, 2, level1textures.TREES2TEXTURE, 45, 15, xpos3, 0);
-		utility.drawImage(window, player.PLAYERSPRITE, 2, xplayer, yplayer + bobOffset, 100, 3);
+		utility.drawImage(window, player.PLAYERSPRITE, 2, playermove.xplayer, playermove.yplayer + bobOffset, 100, 3);
+		
 		window.compose();
 		
 		// Screen state

@@ -75,7 +75,7 @@ public class cutScene1 {
 		29, 34, 30
 	};
 
-	private static boolean startingFadeOut = false;
+	private static boolean startingFadeOut = false, skipper = false;
 	private static int runner = 0, finished = 0, cutsceneState = 0;
 
 	// --- PALETTE INITIALIZATION ---
@@ -100,7 +100,11 @@ public class cutScene1 {
 		}
 
 		// --- STATE LOGIC ---
-
+		skipper = utility.skip();
+		
+		if(skipper)
+			startingFadeOut = true;
+		
 		// State 0: Fade IN Church
 		if (cutsceneState == 0) {
 			drawBackground(window, cutSceneTextures1.FIRST_SLIDE_TEXTURE_background);
@@ -141,7 +145,7 @@ public class cutScene1 {
 				cutsceneState++;
 				return;
 			}
-			utility.drawText(FIRSTTEXT, window);
+			utility.drawText(FIRSTTEXT, window, 32, 36, 288, 204);
 		} 
 		// State 4: Fade IN Woman Burning
 		else if (cutsceneState == 4) {
@@ -183,7 +187,7 @@ public class cutScene1 {
 				cutsceneState++;
 				return;
 			}
-			utility.drawText(SECONDTEXT, window);
+			utility.drawText(SECONDTEXT, window, 32, 36, 288, 204);
 		} 
 		// State 8: Fade IN Abomination
 		else if (cutsceneState == 8) {
@@ -225,7 +229,7 @@ public class cutScene1 {
 				cutsceneState++;
 				return;
 			}
-			utility.drawText(THIRDTEXT, window);
+			utility.drawText(THIRDTEXT, window, 32, 36, 288, 204);
 		} 
 		// State 12: Text 4 ("They must die")
 		else if (cutsceneState == 12) {
@@ -233,7 +237,7 @@ public class cutScene1 {
 			if (runner >= 180) {
 				startingFadeOut = true;
 			}
-			utility.drawText(FOURTHTEXT, window);
+			utility.drawText(FOURTHTEXT, window, 32, 36, 288, 204);
 		}
 
 		// --- RENDERING PIPELINE FOR NON-FADE STATES ---

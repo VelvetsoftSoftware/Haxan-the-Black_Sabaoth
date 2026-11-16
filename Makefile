@@ -1,4 +1,4 @@
-SOURCES := $(wildcard *.java audio/*.java levels/*.java textures/*.java cutscene/* .java)
+SOURCES := $(wildcard *.java audio/*.java levels/*.java textures/*.java cutscene/* .java loadout_select/* .java)
 
 compile:
 	if not exist bin mkdir bin

@@ -32,46 +32,95 @@ public class main {
 		}));
 
         Window window = new Window();
+		
+		try {
+			Class.forName("Textures");
+			Class.forName("mainMenuTextures");
+			Class.forName("level1textures");
+			Class.forName("player");
+			Class.forName("intro");
+			Class.forName("mainmenu");
+			Class.forName("cutScene1");
+			Class.forName("level1");
+			Class.forName("bulletdata");
+		} catch (ClassNotFoundException e) {
+			e.printStackTrace();
+		}
 
-        while (true) {	
-			long frameStart = System.nanoTime();
-			
-            Input.update();
-            window.clearBuffers();
-			playermove.fullscreen(window);
+	int previousState = gameState;
 
-			switch (gameState) {
-				case 0:
-					intro.loadintro(window);
-					break;
-				case 1:
-					mainmenu.drawmainmenu(window);
-					break;
-				case 2:
-					cutScene1.drawcutscene1(window);
-					break;
-				case 3:
-                    level1.drawmainmenu(window);
-					break;
-           }
+	while (true) {
+		long frameStart = System.nanoTime();
+		// INPUT
+		Input.update();
+		long afterInput = System.nanoTime();
+		// CLEAR BUFFERS
+		window.clearBuffers();
+		long afterClear = System.nanoTime();
+		// FULLSCREEN INPUT
+		playermove.fullscreen(window);
+		long afterFullscreen = System.nanoTime();
+		// SCENE EXECUTION
+		int stateAtStart = gameState;
 
-		   
-		   long beforeSleep = System.nanoTime();
+	   switch (gameState) {
+			case 0:
+				intro.loadintro(window);
+				break;
+			case 1:
+				mainmenu.drawmainmenu(window);
+				break;
+			case 2:
+				cutScene1.drawcutscene1(window);
+				break;
+//			case 3:
+//				loadoutdisplay.inventorydraw(window);
+//				break;
+			case 3:
+				level1.drawmainmenu(window);
+				break;
+		}
 
-           utility.sleep60fps();
-		   
-		   long frameEnd = System.nanoTime();
+		long afterScene = System.nanoTime();
 
-			double workMs = (beforeSleep - frameStart) / 1_000_000.0;
-			double sleepMs = (frameEnd - beforeSleep) / 1_000_000.0;
-			double totalMs = (frameEnd - frameStart) / 1_000_000.0;
+		// FRAME WORK COMPLETE
+		long workNs = afterScene - frameStart;
+		double workMs = workNs / 1_000_000.0;
 
-			if (totalMs > 25.0) {
-				System.out.printf("SLOW FRAME | Work: %.3f ms | Limiter: %.3f ms | Total: %.3f ms%n", workMs, sleepMs, totalMs);
-			}
-		   
-		   utility.garbagetester();
-		   utility.fpscounter();
-        }
-    }
+		// Only print diagnostics on slow frames
+		if (workMs > 25.0) {
+			System.out.println("========== SLOW FRAME ==========");
+
+			System.out.printf("Input: %.3f ms%n", (afterInput - frameStart) / 1_000_000.0);
+			System.out.printf("Clear: %.3f ms%n", (afterClear - afterInput) / 1_000_000.0);
+			System.out.printf("Fullscreen: %.3f ms%n",(afterFullscreen - afterClear) / 1_000_000.0);
+			System.out.printf("Scene %d: %.3f ms%n",stateAtStart,(afterScene - afterFullscreen) / 1_000_000.0);
+			System.out.printf("Total Work: %.3f ms%n",workMs);
+			System.out.printf("Swing Paint: %.3f ms | Max: %.3f ms%n",window.getLastPaintTime(),window.getMaxPaintTime());
+			System.out.println("================================");
+		}
+
+		if (gameState != previousState) {
+			System.out.printf(
+				"SCENE CHANGE: %d -> %d%n",
+				previousState,
+				gameState
+			);
+			previousState = gameState;
+		}
+
+		utility.garbagetester();
+		utility.fpscounter();
+
+		long frameWorkEnd = System.nanoTime();
+		double work2Ms = (frameWorkEnd - frameStart) / 1_000_000.0;
+
+		if (workMs > 16.67) {
+			System.out.printf("FRAME BUDGET EXCEEDED: %.3f ms%n", work2Ms);
+		}
+
+		// Keep disabled while benchmarking uncapped performance
+		utility.sleep60fps();
+	}
+	}
 }   

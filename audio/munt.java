@@ -66,14 +66,14 @@ public class munt {
 	}   
 
     public void play() {
-        if (currentIndex >= 0 && sequencer.isRunning())
-            sequencer.start();
-    }
+		if (currentIndex >= 0 && !sequencer.isRunning())
+			sequencer.start();
+	}
 
-    public void pause() {
-        if (!sequencer.isRunning())
-            sequencer.stop();
-    }
+	public void pause() {
+		if (sequencer.isRunning())
+			sequencer.stop();
+	}
 
     public void next() {
         if (playlist.isEmpty()) return;
